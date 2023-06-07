@@ -4,6 +4,7 @@ import ensah.absencemanagement.dtos.enseignants.EnseignantDTO;
 import ensah.absencemanagement.dtos.enseignants.EnseignantMapper;
 import ensah.absencemanagement.dtos.users.UserRequest;
 import ensah.absencemanagement.models.users.User;
+import ensah.absencemanagement.services.absences.AbsenceService;
 import ensah.absencemanagement.services.enseignants.EnseignantService;
 import ensah.absencemanagement.services.logging_events.LoggingEventService;
 import ensah.absencemanagement.utils.SessionManager;
@@ -22,13 +23,15 @@ public class EnseignantController {
 
     private final EnseignantService enseignantService;
     private final EnseignantMapper enseignantMapper;
+    private final AbsenceService absenceService;
     private final LoggingEventService loggingEventService;
 
     @Autowired
-    public EnseignantController(EnseignantService enseignantService, EnseignantMapper enseignantMapper, LoggingEventService loggingEventService) {
+    public EnseignantController(EnseignantService enseignantService, AbsenceService absenceService, EnseignantMapper enseignantMapper, LoggingEventService loggingEventService) {
         this.enseignantService = enseignantService;
         this.enseignantMapper = enseignantMapper;
         this.loggingEventService = loggingEventService;
+        this.absenceService = absenceService;
     }
 
     @GetMapping
@@ -47,13 +50,16 @@ public class EnseignantController {
             Model model,
             HttpSession session,
             @PathVariable("id") Long enseignantId,
-            @RequestParam(value = "historical_page", required = false, defaultValue = "1") int historicalPage
+            @RequestParam(value = "historical_page", required = false, defaultValue = "1") int historicalPage,
+            @RequestParam(value = "absence_page", required = false, defaultValue = "1") int absencePage
     ) {
         EnseignantDTO enseignantDTO = enseignantService.getEnseignantById(enseignantId);
 
         model.addAttribute("enseignant", enseignantDTO);
         model.addAttribute("updateRequest", enseignantMapper.map(enseignantDTO));
         SessionUser user = SessionManager.getUserSession(session);
+
+        model.addAttribute("absences", absenceService.getAbsencesByEnseignant(enseignantId, absencePage - 1""));
 
         if (user.getRole().equals(User.Role.SUPER_ADMIN)) {
             model.addAttribute("historical", loggingEventService.getVisitsByUserId(enseignantId, historicalPage - 1));

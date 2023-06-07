@@ -358,11 +358,11 @@
                                 </div>
                               </td>
                             </tr>
-                        </th:block>
+                          </th:block>
                         </tbody>
                       </table>
                     </div>
-                    <div class="d-flex align-items-center justify-content-center" th:if="${absences.second.hasContent()}">
+                    <div class="d-flex align-items-center justify-content-center" th:if="${absences != null && absences.second.hasContent()}">
                       <nav aria-label="Page navigation example">
                         <ul class="pagination">
                           <li class="page-item" th:if="${absences.second.hasPrevious()}">

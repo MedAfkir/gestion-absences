@@ -230,63 +230,55 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <th scope="row">1</th>
-                      <td>Élement 1</td>
-                      <td>Etudiant 1</td>
-                      <td>01/01/2096</td>
-                      <td>Non justifié</td>
-                      <td>Le 03/02/2956 à 25:95</td>
+                    <tr th:each="absence : ${absences.content}">
+                      <th th:text="${absence.id}" scope="row">1</th>
+                      <td th:text="${absence.matiere.name}"></td>
+                      <td th:text="${absence.etudiant.firstnameFr} + ' ' + ${absence.etudiant.lastnameFr.toUpperCase()}"></td>
+                      <td th:text="${'Le ' + #dates.format(absence.moment, 'dd-MM-yyyy')} + ' à ' + ${#dates.format(absence.moment, 'HH-mm')}"></td>
+                      <td th:text="${absence.etat.name}"></td>
+                      <td th:text="${'Le ' + #dates.format(absence.createdAt, 'dd-MM-yyyy')} + ' à ' + ${#dates.format(absence.createdAt, 'HH-mm')}"></td>
                       <td>
                         <div class="d-flex justify-content-center align-items-center">
-                          <button class="btn btn-outline-primary mx-1">
+                          <a th:href="@{/absences/{id}(id=${absence.id})}" class="btn btn-outline-primary mx-1">
                             <i class="bi bi-eye"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">1</th>
-                      <td>Élement 1</td>
-                      <td>Etudiant 1</td>
-                      <td>01/01/2096</td>
-                      <td>Non justifié</td>
-                      <td>Le 03/02/2956 à 25:95</td>
-                      <td>
-                        <div
-                          class="d-flex justify-content-center align-items-center"
-                        >
-                          <button class="btn btn-outline-primary mx-1">
-                            <i class="bi bi-eye"></i>
-                          </button>
-                          <button class="btn btn-outline-danger mx-1">
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">1</th>
-                      <td>Élement 1</td>
-                      <td>Etudiant 1</td>
-                      <td>01/01/2096</td>
-                      <td>Non justifié</td>
-                      <td>Le 03/02/2956 à 25:95</td>
-                      <td>
-                        <div
-                          class="d-flex justify-content-center align-items-center"
-                        >
-                          <button class="btn btn-outline-primary mx-1">
-                            <i class="bi bi-eye"></i>
-                          </button>
-                          <button class="btn btn-outline-danger mx-1">
-                            <i class="bi bi-trash"></i>
-                          </button>
+                          </a>
                         </div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
+
+                <div class="d-flex align-items-center justify-content-center" th:if="${absences.hasContent()}">
+                  <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                      <li class="page-item" th:if="${absences.hasPrevious()}">
+                        <a class="page-link" th:href="@{/enseignants/{id}(id=${enseignant.id}, absence_page=${absences.number})}">
+                          Précedant
+                        </a>
+                      </li>
+                      <li class="page-item disabled" th:if="${!absences.hasPrevious()}">
+                        <a class="page-link" href="#">Précedant</a>
+                      </li>
+                      <li class="page-item" th:each="n : ${#numbers.sequence(1, absences.totalPages)}">
+                        <a class="page-link"
+                           th:classappend="${absences.second.number + 1 == n} ? 'active'"
+                           th:href="@{/enseignants/{id}(id=${enseignant.id}, absence_page=${n})}"
+                           th:text="${n}"
+                        ></a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" th:if="${absences.hasNext()}"
+                           th:href="@{/enseignants/{id}(id=${enseignant.id}, absence_page=${absences.number + 2})}"
+                        >
+                          Suivant
+                        </a>
+                      </li>
+                      <li class="page-item disabled" th:if="${!absences.hasNext()}">
+                        <a class="page-link" href="#">Suivant</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
               </div>
 
               <div class="tab-pane fade py-3" id="bordered-historical" role="tabpanel"
