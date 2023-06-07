@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head th:replace="~{template.html :: head(title='Tous les inscriptions')}"></head>
+  <body>
+    <div th:replace="~{template.html :: toasts}"></div>
+
+    <div th:replace="~{template.html :: header}"></div>
+
+    <aside id="sidebar" class="sidebar" th:replace="~{template.html :: sidebar}"></aside>
+
+    <main id="main" class="main">
+      <div class="pagetitle" th:replace="~{template.html :: breadcrumb(label1='Inscriptions', link1='/inscriptions', label=false)}"></div>
+      <section class="section">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                  <h5 class="card-title">Tous les inscriptions</h5>
+                  <button type="submit"
+                      sec:authorize="hasAuthority('ETUDIANT')"
+                      class="btn btn-sm btn-success"
+                      data-bs-toggle="modal"
+                      data-bs-target="#send-demand"
+                      th:if="${canRegistrate}"
+                  >
+                    S'inscrire
+                  </button>
+                </div>
+
+                <div class="table-responsive text-nowrap">
+                  <table class="table text-center">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" sec:authorize="hasAuthority('CADRE_ADMINISTRATEUR')">Étudiant</th>
+                        <th scope="col">Niveau</th>
+                        <th scope="col">Année universitaire</th>
+                        <th scope="col">État</th>
+                        <th scope="col">Date de création</th>
+                        <th scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="inscription : ${page.content}">
+                        <th th:text="${inscription.id}" scope="row">1</th>
+                        <td sec:authorize="hasAuthority('CADRE_ADMINISTRATEUR')">
+                          <a th:href="@{/etudiants/{id}(id=${inscription.etudiant.id})}" class="btn btn-link">
+                            <img width="60px" th:if="${inscription.etudiant.image == null}" th:src="@{/assets/img/profil.png}" alt="Photo de profil" class="rounded-circle" />
+                            <img width="60px" th:if="${inscription.etudiant.image != null}"
+                                 th:src="'data:' + ${inscription.etudiant.image.type} + ';base64,' + ${inscription.etudiant.image.data}"
+                                 alt="Photo de profil"
+                                 class="rounded-circle"
+                            />
+                            <span th:text="${inscription.etudiant.firstnameFr + ' ' + inscription.etudiant.lastnameFr}"></span>
+                          </a>
+                        </td>
+                        <td>
+                          <a sec:authorize="hasAuthority('CADRE_ADMINISTRATEUR')"
+                             th:href="@{/niveaux/{id}(id=${inscription.niveau.id})}"
+                             th:text="${inscription.niveau.name}"
+                             class="btn btn-link"
+                          ></a>
+                          <th:block sec:authorize="hasAuthority('ETUDIANT')" th:text="${inscription.niveau.name}"></th:block>
+                        </td>
+                        <td>
+                          <a sec:authorize="hasAuthority('CADRE_ADMINISTRATEUR')"
+                             th:href="@{/annees-univ/{id}(id=${inscription.anneeUniv.id})}"
+                             th:text="${inscription.anneeUniv.name}"
+                             class="btn btn-link"
+                          ></a>
+                          <th:block sec:authorize="hasAuthority('ETUDIANT')" th:text="${inscription.anneeUniv.name}"></th:block>
+                        </td>
+                        </td>
+                        <td th:text="${inscription.etat.getName()}"></td>
+                        <td th:text="${#dates.format(inscription.createdAt, 'dd-MM-yyyy')}"></td>
+                        <td>
+                          <div
+                            class="d-flex justify-content-center align-items-center"
+                          >
+                            <a th:href="@{/inscriptions/{id}(id=${inscription.id})}" class="btn btn-outline-primary mx-1">
+                              <i class="bi bi-eye"></i>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-center" th:if="${page.hasContent()}">
+                  <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                      <li class="page-item" th:if="${page.hasPrevious()}">
+                        <a class="page-link"
+                           th:href="@{/inscriptions(page=${page.number})}"
+                        >
+                          Précedant
+                        </a>
+                      </li>
+                      <li class="page-item disabled" th:if="${!page.hasPrevious()}">
+                        <a class="page-link" href="#">Précedant</a>
+                      </li>
+                      <li class="page-item" th:each="n : ${#numbers.sequence(1, page.totalPages)}">
+                        <a class="page-link"
+                           th:classappend="${page.number + 1 == n} ? 'active'"
+                           th:href="@{/inscriptions(page=${n})}"
+                           th:text="${n}"
+                        ></a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link"
+                           th:if="${page.hasNext()}"
+                           th:href="@{/inscriptions(page=${page.number + 2})}"
+                        >
+                          Suivant
+                        </a>
+                      </li>
+                      <li class="page-item disabled" th:if="${!page.hasNext()}">
+                        <a class="page-link" href="#">Suivant</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div sec:authorize="hasAuthority('ETUDIANT')" class="modal fade" tabindex="-1" id="send-demand">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Demande d'inscription</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" th:action="@{/inscriptions}">
+              <div class="row mt-3">
+                <label class="col-sm-2 col-form-label text-wrap" for="niveau-input">Niveau</label>
+                <div class="col-sm-10">
+                  <select class="form-select" name="niveauId" id="niveau-input">
+                    <option disabled selected>Sélectionner un niveau</option>
+                    <option th:each="niveau : ${niveaux}"
+                            th:value="${niveau.id}"
+                            th:text="${niveau.name}"
+                    ></option>
+                  </select>
+                </div>
+              </div>
+              <div class="my-3 d-flex align-items-center justify-content-end">
+                <button type="reset" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-plus me-2"></i>
+                  Envoyer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS Files -->
+    <script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+    <script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+    <script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+    <script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+    <script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+    <script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+    <script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+    <!-- Template Main JS File -->
+    <script th:src="@{/assets/js/main.js}"></script>
+  </body>
+</html>

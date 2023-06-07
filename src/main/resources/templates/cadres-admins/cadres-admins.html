@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head th:replace="~{template.html :: head(title='Tous les cadres administrateurs')}"></head>
+  <body>
+    <div th:replace="~{template.html :: toasts}"></div>
+
+    <div th:replace="~{template.html :: header}"></div>
+
+    <aside id="sidebar" class="sidebar" th:replace="~{template.html :: sidebar}"></aside>
+
+    <main id="main" class="main">
+      <div class="pagetitle" th:replace="~{template.html :: breadcrumb(label1='Tous les cadres administrateurs', link1='/cadres-admins', label=false)}"></div>
+      <section class="section">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="card-title">Cadres Administrateurs</h5>
+              <a th:href="@{/users/create}" class="btn btn-link">
+                <i class="bi bi-plus me-1"></i>
+                Ajouter
+              </a>
+            </div>
+
+            <form method="GET" class="row mb-3">
+              <div class="col-8">
+                <input type="text"
+                    class="form-control"
+                    placeholder="Nom Prénom (e.g 'Nom Prénom')"
+                    name="name"
+                    th:value="${param.get('name')}"
+                />
+              </div>
+              <div class="col-4">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+            </form>
+
+
+            <div class="table-responsive text-nowrap">
+              <table class="table text-center">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Photo de profil</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">email</th>
+                    <th scope="col">Activation (état)</th>
+                    <th scope="col">Verrouillage</th>
+                    <th scope="col">Rôle</th>
+                    <th scope="col">Date de création</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="user : ${page.content}">
+                    <th scope="row" th:text="${user.id}"></th>
+                    <th>
+                      <img width="100px" th:if="${user.image == null}" th:src="@{/assets/img/profil.png}" alt="Photo de profil" class="rounded-circle" />
+                      <img width="100px" th:if="${user.image != null}"
+                           th:src="'data:' + ${user.image.type} + ';base64,' + ${user.image.data}"
+                           alt="Photo de profil"
+                           class="rounded-circle"
+                      />
+                    </th>
+                    <td th:text="${user.firstnameFr + ' ' + user.lastnameFr.toUpperCase()}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td th:text="${user.account != null } ? ${user.account.active ? '✅' : '❌'}"
+                        th:title="${user.account != null } ? ${user.account.active ? 'Activé' : 'Non activé'}"
+                    ></td>
+                    <td th:text="${user.account != null } ? ${user.account.notLocked ? '✅' : '❌'}"
+                        th:title="${user.account != null } ? ${user.account.notLocked ? 'Non verrouillé' : 'Verrouillé'}"
+                    ></td>
+                    <td>
+                      <div class="d-flex align-items-center justify-content-center">
+                        <span th:text="${user.role == null ? 'Pas de Rôle' : user.role.name()}"
+                              class="me-1"
+                        ></span>
+                        <button type="button"
+                          class="btn btn-link"
+                          data-bs-toggle="modal"
+                          th:attr="data-bs-target=${'#update-user-role-' + user.id}"
+                        >
+                          <i class="bi bi-pen"></i>
+                        </button>
+                      </div>
+                    </td>
+                    <td th:text="${#dates.format(user.createdAt, 'dd-MM-yyyy')}"></td>
+                    <td>
+                      <div class="d-flex justify-content-center align-items-center">
+                        <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-outline-primary mx-1">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                        <button class="btn btn-outline-danger mx-1">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="d-flex align-items-center justify-content-center" th:if="${page.hasContent()}">
+              <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                  <li class="page-item" th:if="${page.hasPrevious()}">
+                    <a class="page-link" th:href="@{/cadres-admins(name=${param.get('name')}, page=${page.number})}">
+                      Précedant
+                    </a>
+                  </li>
+                  <li class="page-item disabled" th:if="${!page.hasPrevious()}">
+                    <a class="page-link" href="#">Précedant</a>
+                  </li>
+                  <li class="page-item" th:each="n : ${#numbers.sequence(1, page.totalPages)}">
+                    <a class="page-link"
+                       th:classappend="${page.number + 1 == n} ? 'active'"
+                       th:href="@{/cadres-admins(name=${param.get('name')}, page=${n})}"
+                       th:text="${n}"
+                    ></a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" th:if="${page.hasNext()}" th:href="@{/cadres-admins(name=${param.get('name')}, page=${page.number + 2})}">
+                      Suivant
+                    </a>
+                  </li>
+                  <li class="page-item disabled" th:if="${!page.hasNext()}">
+                    <a class="page-link" href="#">Suivant</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal fade show"
+         tabindex="-1"
+         aria-modal="true"
+         role="dialog"
+         style="display: block"
+         th:if="${param.get('account-created') != null}"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-success">Compté crée avec succées ✔️</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <p>Nom d'utilisateur : <span th:text="${param.get('username')}"></span></p>
+              <p>Mot de passe : <span th:text="${param.get('password')}"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal update-role-modal"
+         th:id="${'update-user-role-' + user.id}"
+         tabindex="-1"
+         aria-modal="true"
+         role="dialog"
+         th:each="user : ${users}"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modification de Role</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form th:action="@{/users/{id}/role(id=${user.id})}" method="post" th:object="${setRoleRequest}">
+              <div class="row mb-3">
+                <label class="col-sm-3 col-form-label" for="update-user-role--role-input">
+                  Role <b>*</b>
+                </label>
+                <div class="col-sm-9">
+                  <select class="form-select" name="role" id="update-user-role--role-input">
+                    <option disabled selected>Choisir un rôle</option>
+                    <option th:each="role : ${roles}"
+                        th:value="${role.name()}"
+                        th:text="${role.getName()}"
+                        th:selected="${user.role != null && role.equals(user.role)} ? 'selected'"
+                    ></option>
+                  </select>
+                </div>
+              </div>
+              <div class="d-flex align-items-center justify-content-end">
+                <button type="reset"
+                    class="btn btn-outline-secondary me-2"
+                    data-bs-dismiss="modal"
+                >
+                  Annuler
+                </button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End #main -->
+
+    <div id="role-enseignant" th:attr="data-role=${ROLE_ENSEIGNANT}" class="d-none"></div>
+    <div id="role-etudiant" th:attr="data-role=${ROLE_ETUDIANT}" class="d-none"></div>
+    <div id="role-cadre-admin" th:attr="data-role=${ROLE_CADRE_ADMINISTRATEUR}" class="d-none"></div>
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS Files -->
+    <script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+    <script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+    <script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+    <script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+    <script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+    <script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+    <script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+    <!-- Template Main JS File -->
+    <script th:src="@{/assets/js/main.js}"></script>
+
+    <script>
+      const CIN_INPUT_NAME = "cin";
+      const CNE_INPUT_NAME = "cne";
+      const roleEnseignant = document.getElementById('role-enseignant').dataset.role;
+      const roleEtudiant = document.getElementById('role-etudiant').dataset.role;
+      const roleCadreAdmin = document.getElementById('role-cadre-admin').dataset.role;
+      const forms = document.querySelectorAll('.update-role-modal form');
+
+      forms.forEach((form) => {
+        const select = form.querySelector('select');
+        const cinInput = createInput('CIN', 'cin');
+        const cneInput = createInput('CNE', 'cne');
+        const dateNaissInput = createInput('Date de naissance', 'dateNaissance', 'date');
+
+        manageInputs(form, select, [cinInput], [cneInput, dateNaissInput]);
+
+        select.addEventListener('change', (e) => {
+          manageInputs(form, select, [cinInput], [cneInput, dateNaissInput]);
+        });
+      });
+
+      /**
+       * @param form {HTMLFormElement}
+       * @param select {HTMLSelectElement}
+       * @param enseignantInputs {HTMLElement[]}
+       * @param etudiantInputs {HTMLElement[]}
+       */
+      function manageInputs(form, select, enseignantInputs, etudiantInputs) {
+        switch (select.value) {
+          case roleEnseignant:
+            etudiantInputs.forEach(input => input.remove());
+            enseignantInputs.forEach(input => select.parentElement.parentElement.after(input));
+            break;
+          case roleEtudiant:
+            enseignantInputs.forEach(input => input.remove());
+            etudiantInputs.forEach(input => select.parentElement.parentElement.after(input));
+            break;
+          case roleCadreAdmin:
+            etudiantInputs.forEach(input => input.remove());
+            enseignantInputs.forEach(input => input.remove());
+            break;
+        }
+      }
+
+      /**
+       * Create an input container
+       * @param labelText {string} Label text
+       * @param name {string} Input name
+       * @param type {string} Input type
+       * @returns {HTMLDivElement}
+       */
+      function createInput(labelText, name, type = "text") {
+        const container = document.createElement("div");
+        container.classList.add('row', 'mb-3');
+
+        const inputContainer = document.createElement("div");
+        inputContainer.classList.add('col-sm-9');
+
+        const label = document.createElement("label");
+        label.innerHTML = `${labelText} <b>*<b/>`;
+        label.htmlFor = `${name}-input`;
+        label.classList.add('col-sm-3', 'col-form-label');
+
+        const input = document.createElement("input");
+        input.id = `${name}-input`;
+        input.type = type;
+        input.required = true;
+        input.name = name;
+        input.classList.add('form-control');
+
+        container.append(label);
+        inputContainer.append(input);
+        container.append(inputContainer);
+        return container;
+      }
+    </script>
+  </body>
+</html>

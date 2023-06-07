@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="~{template.html :: head(title='Profil')}"></head>
+
+<body>
+<div th:replace="~{template.html :: toasts}"></div>
+
+<div th:replace="~{template.html :: header}"></div>
+
+<aside id="sidebar" class="sidebar" th:replace="~{template.html :: sidebar}"></aside>
+
+<main id="main" class="main">
+  <div class="pagetitle" th:replace="~{template.html :: breadcrumb(label1='Profil', link1='/profil', label=null)}"></div>
+
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-1"></div>
+      <div class="col-lg-10">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title mt-2">Photo de profil</h5>
+            <div>
+              <img th:if="${session.get('USER_KEY').image == null}" th:src="@{/assets/img/profil.png}" alt="Photo de profil" class="rounded-circle" />
+              <img th:if="${session.get('USER_KEY').image != null}"
+                   th:src="'data:' + ${session.get('USER_KEY').image.type} + ';base64,' + ${session.get('USER_KEY').image.data}"
+                   alt="Photo de profil"
+                   class="rounded-circle"
+              />
+              <div class="d-flex align-items-center">
+                <button class="btn btn-primary"
+                        title="Modifier photo de profil"
+                        data-bs-toggle="modal"
+                        data-bs-target="#update-profil-img"
+                >
+                  <i class="bi bi-pen"></i>
+                </button>
+                <form th:action="@{/profil/remove-image}" method="post" class="ms-2">
+                  <button type="submit" title="Retirer l'image de profil" class="btn btn-danger">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <hr>
+
+            <form th:object="${profilRequest}" th:action="@{/profil}" method="post">
+              <h5 class="card-title">Informations personnelles</h5>
+              <div class="row mb-3">
+                <label class="col-sm-3 col-form-label" for="phone-num-input">
+                  Numéro de téléphone <b>*</b>
+                </label>
+                <div class="col-sm-9">
+                  <input type="text"
+                       class="form-control"
+                       id="phone-num-input"
+                       th:field="*{phoneNumber}"
+                       required
+                  />
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <label class="col-sm-3 col-form-label" for="email-input">
+                  Email <b>*</b>
+                </label>
+                <div class="col-sm-9">
+                  <input type="text"
+                     id="email-input"
+                     class="form-control"
+                     th:field="*{email}"
+                     required
+                  />
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">Enregistrer</button>
+            </form>
+
+            <hr>
+
+            <form th:action="@{/change-password}" method="post" th:object="${updatePassword}">
+              <h5 class="card-title">Changement de Mot de passe</h5>
+              <div class="row mb-3">
+                <label class="col-sm-3 col-form-label" for="current-password-input">
+                  Mot de passe actuel <b>*</b>
+                </label>
+                <div class="col-sm-9">
+                  <input type="text"
+                         class="form-control"
+                         id="current-password-input"
+                         th:field="*{currentPassword}"
+                         required
+                  />
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <label class="col-sm-3 col-form-label" for="new-password-input">
+                  Nouveau mot de passe <b>*</b>
+                </label>
+                <div class="col-sm-9">
+                  <input type="text"
+                         id="new-password-input"
+                         class="form-control"
+                         th:field="*{newPassword}"
+                         required
+                  />
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">Enregistrer</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="modal " id="update-profil-img" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modification de photo de profil</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form th:action="@{/profil/update-image}" method="post" enctype="multipart/form-data">
+          <label class="form-label" title="Modifier photo de profil" for="update-photo">
+            Séléctionner une image
+          </label>
+          <input accept="image/*" class="form-control" id="update-photo" type="file" name="file" />
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success mt-3">
+              Modifier
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+  <i class="bi bi-arrow-up-short"></i>
+</a>
+
+<!-- Vendor JS Files -->
+<script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+<script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+<script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+<script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+<script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+<script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+<script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+<!-- Template Main JS File -->
+<script th:src="@{/assets/js/main.js}"></script>
+</body>
+</html>

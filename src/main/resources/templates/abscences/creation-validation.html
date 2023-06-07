@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head th:replace="~{template.html :: head(title='Validation de la création')}"></head>
+  <body>
+    <div th:replace="~{template.html :: toasts}"></div>
+
+    <div th:replace="~{template.html :: header}"></div>
+
+    <aside id="sidebar" class="sidebar" th:replace="~{template.html :: sidebar}"></aside>
+
+    <main id="main" class="main">
+      <div class="pagetitle" th:replace="~{template.html :: breadcrumb(label1='Absences', link1='/absences', label='Valider la création')}"></div>
+      <section class="section">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                  <h5 class="card-title">Validation de la création</h5>
+                </div>
+
+                <form th:action="@{/absences/multiple/validate}" method="post">
+                  <input type="hidden" name="enseignantId" th:value="${request.enseignantId}">
+                  <input type="hidden" name="matiereId" th:value="${request.matiereId}">
+                  <input type="hidden" name="typeSeanceId" th:value="${request.typeSeanceId}">
+                  <input type="hidden" name="moment" th:value="${#dates.format(request.moment, 'yyyy-MM-dd') + 'T' + #dates.format(request.moment, 'HH:mm')}">
+
+                  <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">
+                      Étudiants
+                    </label>
+                    <div class="col-sm-9">
+                      <div class="form-check" th:each="etudiant : ${etudiants}">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               th:id="${'etudiant-checkbox-' + etudiant.id}"
+                               name="etudiants"
+                               th:value="${etudiant.id}"
+                               checked
+                        />
+                        <label class="form-check-label"
+                               th:for="${'etudiant-checkbox-' + etudiant.id}"
+                               th:text="${etudiant.firstnameFr} + ' ' + ${etudiant.lastnameFr.toUpperCase()}"></label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="d-flex justify-content-end">
+                      <a type="reset" class="btn btn-outline-secondary me-2" th:href="@{/absences/create}">
+                        <i class="bi bi-x me-2"></i>
+                        Annuler
+                      </a>
+                      <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check me-2"></i>
+                        Valider
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- End #main -->
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS Files -->
+    <script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+    <script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+    <script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+    <script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+    <script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+    <script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+    <script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+    <!-- Template Main JS File -->
+    <script th:src="@{/assets/js/main.js}"></script>
+  </body>
+</html>

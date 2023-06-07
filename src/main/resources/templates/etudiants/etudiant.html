@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head th:replace="~{template.html :: head(title=${'Étudiant | ' + etudiant.lastnameFr.toUpperCase() + ' ' + etudiant.firstnameFr})}"></head>
+  <body>
+    <div th:replace="~{template.html :: toasts}"></div>
+    <div th:replace="~{template.html :: header}"></div>
+    <aside id="sidebar" class="sidebar" th:replace="~{template.html :: sidebar}"></aside>
+
+    <main id="main" class="main">
+      <div class="pagetitle" th:replace="~{template.html :: breadcrumb(label1='Étudiants', link1='/etudiants', label=${etudiant.lastnameFr.toUpperCase() + ' ' + etudiant.firstnameFr})}"></div>
+
+      <section class="section">
+        <div class="row">
+          <div class="col-lg-1"></div>
+          <div class="col-lg-10">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <h5 class="card-title" th:text="${etudiant.lastnameFr.toUpperCase() + ' ' + etudiant.firstnameFr}"></h5>
+                  <span class="badge text-bg-warning ms-2" th:if="${etudiant.updatedAt != null}">
+                    Modifiée
+                  </span>
+                </div>
+
+                <!-- Tabs -->
+                <ul
+                  class="nav nav-tabs nav-tabs-bordered"
+                  id="borderedTab"
+                  role="tablist"
+                >
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link active"
+                      id="infos-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#bordered-infos"
+                      type="button"
+                      role="tab"
+                      aria-controls="infos"
+                      aria-selected="true"
+                    >
+                      Informations
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      id="inscriptions-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#bordered-inscriptions"
+                      type="button"
+                      role="tab"
+                      aria-controls="inscriptions"
+                      aria-selected="false"
+                    >
+                      Inscriptions
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      id="absences-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#bordered-absences"
+                      type="button"
+                      role="tab"
+                      aria-controls="absences"
+                      aria-selected="false"
+                    >
+                      Absences
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      id="bordered-historical-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#bordered-historical"
+                      type="button"
+                      role="tab"
+                      aria-controls="change-password"
+                      aria-selected="false"
+                      sec:authorize="hasAuthority('SUPER_ADMIN')"
+                    >
+                      Historiques
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      id="account-settings-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#account-settings"
+                      type="button"
+                      role="tab"
+                      aria-controls="change-password"
+                      aria-selected="false"
+                      sec:authorize="hasAuthority('SUPER_ADMIN')"
+                    >
+                      Paramètre du compte
+                    </button>
+                  </li>
+                </ul>
+                <div class="tab-content pt-2">
+                  <!-- ======= Edit Student Form Tab======= -->
+                  <div
+                    class="tab-pane fade show active py-3"
+                    id="bordered-infos"
+                    role="tabpanel"
+                    aria-labelledby="home-tab"
+                  >
+                    <form th:action="@{/etudiants/{id}(id=${etudiant.id})}" th:object="${updateRequest}" method="post">
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label" for="firstnamefr-input">
+                          Prénom <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="text"
+                                 class="form-control"
+                                 id="firstnamefr-input"
+                                 th:field="*{firstnameFr}"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mb-3" dir="rtl">
+                        <label class="col-sm-3 col-form-label" for="firstnameasr-input">
+                          الاسم الشخصي <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="text"
+                                 id="firstnameasr-input"
+                                 class="form-control"
+                                 th:field="*{firstnameAr}"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label" for="lastnamefr-input">
+                          Nom <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="text"
+                                 id="lastnamefr-input"
+                                 class="form-control"
+                                 th:field="*{lastnameFr}"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mb-3" dir="rtl">
+                        <label class="col-sm-3 col-form-label" for="lastnamear-input">
+                          الاسم العائلي <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="text"
+                                 id="lastnamear-input"
+                                 class="form-control"
+                                 th:field="*{lastnameAr}"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label" for="cin-input">
+                          CIN <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="text"
+                                 id="cin-input"
+                                 class="form-control"
+                                 th:field="*{cne}"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label" for="email-input">
+                          Email <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="email"
+                                 id="email-input"
+                                 class="form-control"
+                                 th:field="*{email}"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label" for="phone-number-input">
+                          Numéro de Téléphone <b>*</b>
+                        </label>
+                        <div class="col-sm-9 d-flex align-items-center">
+                          <input type="text"
+                                 id="phone-number-input"
+                                 class="form-control"
+                                 th:field="*{phoneNumber}"
+                                 value="{+1 (536) 821-2088}"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="d-flex justify-content-end">
+                          <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>
+                            Enregistrer
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                  <!-- End Edit Student Form Tab -->
+
+                  <!-- ======= Student Inscriptions List Tab ======= -->
+                  <div class="tab-pane fade py-3"
+                    id="bordered-inscriptions"
+                    role="tabpanel"
+                    aria-labelledby="profile-tab"
+                  >
+                    <div class="table-responsive text-nowrap">
+                      <table class="table text-center">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Niveau</th>
+                            <th scope="col">Année</th>
+                            <th scope="col">État</th>
+                            <th scope="col">Date de création</th>
+                            <th scope="col">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="inscription : ${inscriptions.content}">
+                            <th th:text="${inscription.id}" scope="row"></th>
+                            <td>
+                              <a th:href="@{/niveaux/{id}(id=${inscription.niveau.id})}"
+                                 th:text="${inscription.niveau.name}"
+                                 class="btn btn-link"
+                              ></a>
+                            </td>
+                            <td>
+                              <a th:href="@{/annees-univ/{id}(id=${inscription.anneeUniv.id})}"
+                                 th:text="${inscription.anneeUniv.name}"
+                                 class="btn btn-link"
+                              ></a>
+                            </td>
+                            <td th:text="${inscription.etat.getName()}"></td>
+                            <td th:text="${#dates.format(inscription.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
+                            <td>
+                              <div
+                                class="d-flex justify-content-center align-items-center"
+                              >
+                                <a th:href="@{/inscriptions/{id}(id=${inscription.id})}" class="btn btn-outline-primary mx-1">
+                                  <i class="bi bi-eye"></i>
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center" th:if="${inscriptions.hasContent()}">
+                      <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                          <li class="page-item" th:if="${inscriptions.hasPrevious()}">
+                            <a class="page-link"
+                               th:href="@{/etudiants/{id}(id=${etudiant.id}, inscriptions_page=${inscriptions.number})}"
+                            >
+                              Précedant
+                            </a>
+                          </li>
+                          <li class="page-item disabled" th:if="${!inscriptions.hasPrevious()}">
+                            <a class="page-link" href="#">Précedant</a>
+                          </li>
+                          <li class="page-item" th:each="n : ${#numbers.sequence(1, inscriptions.totalPages)}">
+                            <a class="page-link"
+                               th:classappend="${inscriptions.number + 1 == n} ? 'active'"
+                               th:href="@{/etudiants/{id}(id=${etudiant.id}, inscriptions_page=${n})}"
+                               th:text="${n}"
+                            ></a>
+                          </li>
+                          <li class="page-item">
+                            <a class="page-link"
+                               th:if="${inscriptions.hasNext()}"
+                               th:href="@{/etudiants/{id}(id=${etudiant.id}, inscriptions_page=${inscriptions.number + 2})}"
+                            >
+                              Suivant
+                            </a>
+                          </li>
+                          <li class="page-item disabled" th:if="${!inscriptions.hasNext()}">
+                            <a class="page-link" href="#">Suivant</a>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
+                  </div>
+                  <!-- End Student Inscriptions List Tab -->
+
+                  <!-- ======= Student Absences List Tab ======= -->
+                  <div
+                    class="tab-pane fade py-3"
+                    id="bordered-absences"
+                    role="tabpanel"
+                    aria-labelledby="contact-tab"
+                  >
+                    <form method="get" class="mb-2" th:if="${not #lists.isEmpty(inscriptions)}">
+                      <div class="searchbar col-4">
+                        <select class="form-select" name="annee_univ_id">
+                          <option th:each="inscription : ${inscriptions}"
+                                  th:if="${inscription.etat.name() == 'ACCEPTED'}"
+                                  th:value="${inscription.anneeUniv.id}"
+                                  th:text="${inscription.anneeUniv.name}"
+                                  th:selected="${inscription.anneeUniv.id == absences.first.id} ? 'selected'"
+                          ></option>
+                        </select>
+                        <button type="submit" class="btn btn-primary" title="Rechercher">
+                          <i class="bi bi-search"></i>
+                        </button>
+                      </div>
+                    </form>
+                    <div class="table-responsive text-nowrap">
+                      <table class="table text-center">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Élement</th>
+                            <th scope="col">Enseignant</th>
+                            <th scope="col">Date d'absence</th>
+                            <th scope="col">État</th>
+                            <th scope="col">Date de création</th>
+                            <th scope="col">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <th:block th:if="${absences != null}">
+                            <tr th:each="absence : ${absences.getSecond().getContent()}">
+                              <th th:text="${absence.id}" scope="row">1</th>
+                              <td th:text="${absence.matiere.name}"></td>
+                              <td th:text="${absence.enseignant.firstnameFr} + ' ' + ${absence.enseignant.lastnameFr.toUpperCase()}"></td>
+                              <td th:text="${'Le ' + #dates.format(absence.moment, 'dd-MM-yyyy')} + ' à ' + ${#dates.format(absence.moment, 'HH-mm')}"></td>
+                              <td th:text="${absence.etat.name}"></td>
+                              <td th:text="${'Le ' + #dates.format(absence.createdAt, 'dd-MM-yyyy')} + ' à ' + ${#dates.format(absence.createdAt, 'HH-mm')}"></td>
+                              <td>
+                                <div class="d-flex justify-content-center align-items-center">
+                                  <a th:href="@{/absences/{id}(id=${absence.id})}" class="btn btn-outline-primary mx-1">
+                                    <i class="bi bi-eye"></i>
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center" th:if="${absences.second.hasContent()}">
+                      <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                          <li class="page-item" th:if="${absences.second.hasPrevious()}">
+                            <a class="page-link" th:href="@{/etudiants/{id}(id=${etudiant.id}, absences_page=${absences.second.number})}">
+                              Précedant
+                            </a>
+                          </li>
+                          <li class="page-item disabled" th:if="${!absences.second.hasPrevious()}">
+                            <a class="page-link" href="#">Précedant</a>
+                          </li>
+                          <li class="page-item" th:each="n : ${#numbers.sequence(1, absences.second.totalPages)}">
+                            <a class="page-link"
+                               th:classappend="${absences.second.number + 1 == n} ? 'active'"
+                               th:href="@{/etudiants/{id}(id=${etudiant.id}, absences_page=${n})}"
+                               th:text="${n}"
+                            ></a>
+                          </li>
+                          <li class="page-item">
+                            <a class="page-link" th:if="${absences.second.hasNext()}"
+                               th:href="@{/etudiants/{id}(id=${etudiant.id}, absences_page=${absences.second.number + 2})}"
+                            >
+                              Suivant
+                            </a>
+                          </li>
+                          <li class="page-item disabled" th:if="${!absences.second.hasNext()}">
+                            <a class="page-link" href="#">Suivant</a>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
+                  </div>
+
+                  <div
+                    class="tab-pane fade py-3"
+                    id="bordered-historical"
+                    role="tabpanel"
+                    aria-labelledby="contact-tab"
+                    sec:authorize="hasAuthority('SUPER_ADMIN')"
+                  >
+                    <div class="table-responsive text-nowrap">
+                      <table class="table text-center">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Addresse IP</th>
+                            <th scope="col">Detailles</th>
+                            <th scope="col">Date et Heure de visite</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="visit : ${historical.content}">
+                            <th th:text="${visit.id}" scope="row">1</th>
+                            <td th:text="${visit.ipAddress}"></td>
+                            <td th:text="${visit.details}"></td>
+                            <td>
+                              Le <span class="badge text-bg-info" th:text="${#dates.format(visit.createdAt, 'dd-MM-yyyy')}"></span>
+                              à <span class="badge text-bg-info" th:text="${#dates.format(visit.createdAt, 'HH:mm')}"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center" th:if="${historical.hasContent()}">
+                      <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                          <li class="page-item" th:if="${historical.hasPrevious()}">
+                            <a class="page-link" th:href="@{/etudiants/{id}(id=${etudiant.id}, historical_page=${historical.number})}">
+                              Précedant
+                            </a>
+                          </li>
+                          <li class="page-item disabled" th:if="${!historical.hasPrevious()}">
+                            <a class="page-link" href="#">Précedant</a>
+                          </li>
+                          <li class="page-item" th:each="n : ${#numbers.sequence(1, historical.totalPages)}">
+                            <a class="page-link"
+                               th:classappend="${historical.number + 1 == n} ? 'active'"
+                               th:href="@{/etudiants/{id}(id=${etudiant.id}, historical_page=${n})}"
+                               th:text="${n}"
+                            ></a>
+                          </li>
+                          <li class="page-item">
+                            <a class="page-link" th:if="${historical.hasNext()}"
+                               th:href="@{/etudiants/{id}(id=${etudiant.id}, historical_page=${historical.number + 2})}"
+                            >
+                              Suivant
+                            </a>
+                          </li>
+                          <li class="page-item disabled" th:if="${!historical.hasNext()}">
+                            <a class="page-link" href="#">Suivant</a>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
+                  </div>
+
+                  <!-- ======= Account Settings Tab ======= -->
+                  <div class="tab-pane fade py-3"
+                          id="account-settings"
+                          role="tabpanel"
+                          aria-labelledby="change-password-tab"
+                          sec:authorize="hasAuthority('SUPER_ADMIN')"
+                  >
+                    <h5 class="card-title py-0 my-0">Changer le mot de passe</h5>
+                    <hr />
+                    <form method="post" th:action="@{/users/{id}/change-password(id=${etudiant.id})}">
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label" for="new-password-input">
+                          Nouveau mot de passe <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="text"
+                                 class="form-control"
+                                 id="new-password-input"
+                                 name="password"
+                                 required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label" for="confirm-password-input">
+                          Confirmer le mot de passe <b>*</b>
+                        </label>
+                        <div class="col-sm-9">
+                          <input type="text"
+                             class="form-control"
+                             id="confirm-password-input"
+                             name="confirm-password"
+                             required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="d-flex justify-content-end">
+                          <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>
+                            Enregistrer
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <div class="row mt-4">
+                      <div class="col-6">
+                        <h5 class="card-title py-0 my-0">Activation du compte</h5>
+                        <hr />
+                        <div class="d-flex align-items-center" th:if="${etudiant.account.active}">
+                          <p class="me-2 mb-0">Le compte est activé,</p>
+                          <form th:action="@{/users/{id}/disable(id=${etudiant.id})}" method="post">
+                            <button class="btn btn-sm btn-danger">
+                              Désactiver le
+                            </button>
+                          </form>
+                        </div>
+                        <div class="d-flex align-items-center" th:if="${!etudiant.account.active}">
+                          <p class="me-2 mb-0">Le compte est désactivé,</p>
+                          <form th:action="@{/users/{id}/enable(id=${etudiant.id})}" method="post">
+                            <button class="btn btn-sm btn-success">
+                              Activer le
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <h5 class="card-title py-0 my-0">Verrouillage du compte</h5>
+                        <hr />
+                        <div class="d-flex align-items-center" th:if="${!etudiant.account.notLocked}">
+                          <p class="me-2 mb-0">
+                            Le compte est verrouillé,
+                          </p>
+                          <form th:action="@{/users/{id}/unlock(id=${etudiant.id})}" method="post">
+                            <button class="btn btn-sm btn-success">
+                              Déverrouillé le
+                            </button>
+                          </form>
+                        </div>
+                        <div class="d-flex align-items-center" th:if="${etudiant.account.notLocked}">
+                          <p class="me-2 mb-0">Le compte est déverrouillé,</p>
+                          <form th:action="@{/users/{id}/lock(id=${etudiant.id})}" method="post">
+                            <button class="btn btn-sm btn-danger">
+                              Verrouillé le
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- End #main -->
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS Files -->
+    <script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+    <script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+    <script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+    <script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+    <script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+    <script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+    <script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+    <!-- Template Main JS File -->
+    <script th:src="@{/assets/js/main.js}"></script>
+  </body>
+</html>

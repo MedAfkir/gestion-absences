@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head th:fragment="head(title)">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+    <title th:text="${title}"></title>
+
+    <!-- Favicons -->
+    <link th:href="@{/assets/img/favicon.png}" rel="icon"/>
+    <link th:href="@{/assets/img/apple-touch-icon.png}" rel="apple-touch-icon"/>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+          rel="stylesheet"
+    />
+
+    <!-- Vendor CSS Files -->
+    <link th:href="@{/assets/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/assets/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet" />
+    <link th:href="@{/assets/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet" />
+    <link th:href="@{/assets/vendor/quill/quill.snow.css}" rel="stylesheet" />
+    <link th:href="@{/assets/vendor/quill/quill.bubble.css}" rel="stylesheet" />
+    <link th:href="@{/assets/vendor/remixicon/remixicon.css}" rel="stylesheet" />
+    <link th:href="@{/assets/vendor/simple-datatables/style.css}" rel="stylesheet" />
+
+    <!-- Template Main CSS File -->
+    <link th:href="@{/assets/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div style="z-index: 999; top: 20px; right: 20px;" class="position-fixed" id="toasts" th:fragment="toasts">
+    <div th:if="${param.get('success') != null}" class="toast text-bg-success align-items-center fade show border-0 mb-3"
+         style="z-index: 999; top: 20px; right: 20px;" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" th:text="${param.get('success')}"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+        </div>
+    </div>
+
+    <div th:if="${param.get('error') != null}" class="toast text-bg-danger align-items-center fade show border-0"
+         style="z-index: 999; top: 20px; right: 20px;" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" th:text="${param.get('error')}"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+<header id="header" class="header fixed-top d-flex align-items-center" th:fragment="header">
+    <div class="d-flex align-items-center justify-content-between">
+        <a href="/">
+            <span class="d-none d-lg-block">Absence Manager</span>
+        </a>
+        <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div>
+
+    <nav class="header-nav ms-auto">
+        <ul class="d-flex align-items-center">
+            <li class="nav-item dropdown pe-3">
+                <a class="nav-link nav-profile d-flex align-items-center pe-0"
+                   href="#"
+                   data-bs-toggle="dropdown"
+                >
+                    <img th:if="${session.get('USER_KEY').image == null}" th:src="@{/assets/img/profil.png}" alt="Photo de profil" class="rounded-circle" />
+                    <img th:if="${session.get('USER_KEY').image != null}"
+                         th:src="'data:' + ${session.get('USER_KEY').image.type} + ';base64,' + ${session.get('USER_KEY').image.data}"
+                         alt="Photo de profil"
+                         class="rounded-circle"
+                    />
+                    <span class="d-none d-md-block dropdown-toggle ps-2" th:text="${session.get('USER_KEY').firstname + ' ' + session.get('USER_KEY').lastname.toUpperCase()}"></span>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                    <li class="dropdown-header">
+                        <h6 th:text="${session.get('USER_KEY').firstname + ' ' + session.get('USER_KEY').lastname.toUpperCase()}"></h6>
+                        <span th:text="${session.get('USER_KEY').role.name}">Enseignant</span>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider"/>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" th:href="@{/profil}">
+                            <i class="bi bi-person"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <hr class="dropdown-divider"/>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" th:href="@{/logout}">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Se déconnecter</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<aside id="sidebar" class="sidebar" th:fragment="sidebar">
+    <ul class="sidebar-nav" id="sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="/">
+                <i class="bi bi-house-door"></i>
+                <span>Accueil</span>
+            </a>
+        </li>
+
+        <th:block sec:authorize="hasAuthority('CADRE_ADMINISTRATEUR')">
+            <li class="nav-heading">Structure pédagogique</li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed"
+                   data-bs-target="#annees-univ-nav"
+                   data-bs-toggle="collapse"
+                   href="#"
+                >
+                    <i class="bi bi-calendar-date"></i><span>Années universitaires</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                    <ul id="annees-univ-nav"
+                    class="nav-content collapse"
+                    data-bs-parent="#sidebar-nav"
+                >
+                    <li>
+                        <a th:href="@{/annees-univ/create}">
+                            <i class="bi bi-circle"></i><span>Ajouter une année universitaire</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/annees-univ}">
+                            <i class="bi bi-circle"></i><span>Tous les années universitaires</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed"
+                   data-bs-target="#types-seances-nav"
+                   data-bs-toggle="collapse"
+                   href="#"
+                >
+                    <i class="bi bi-list-ol"></i><span>Types de seances</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                    <ul id="types-seances-nav"
+                    class="nav-content collapse"
+                    data-bs-parent="#sidebar-nav"
+                >
+                    <li>
+                        <a th:href="@{/types-seances/create}">
+                            <i class="bi bi-circle"></i><span>Ajouter un type de seance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/types-seances}">
+                            <i class="bi bi-circle"></i><span>Tous les types de seances</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed"
+                   data-bs-target="#filieres-nav"
+                   data-bs-toggle="collapse"
+                   href="#"
+                >
+                    <i class="bi bi-list"></i><span>Filières</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="filieres-nav"
+                    class="nav-content collapse"
+                    data-bs-parent="#sidebar-nav"
+                >
+                    <li>
+                        <a href="/filieres/create">
+                            <i class="bi bi-circle"></i><span>Ajouter une filière</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/filieres">
+                            <i class="bi bi-circle"></i><span>Tous les filières</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed"
+                   data-bs-target="#niveaux-nav"
+                   data-bs-toggle="collapse"
+                   href="#"
+                >
+                    <i class="bi bi-list-ul"></i>
+                    <span>Niveaux</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="niveaux-nav"
+                    class="nav-content collapse"
+                    data-bs-parent="#sidebar-nav"
+                >
+                    <li>
+                        <a href="/niveaux/create">
+                            <i class="bi bi-circle"></i><span>Ajouter un niveau</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/niveaux">
+                            <i class="bi bi-circle"></i><span>Tous les niveaux</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed"
+                    data-bs-target="#modules-nav"
+                    data-bs-toggle="collapse"
+                    href="#"
+                >
+                    <i class="bi bi-list"></i><span>Modules</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="modules-nav"
+                    class="nav-content collapse"
+                    data-bs-parent="#sidebar-nav"
+                >
+                    <li>
+                        <a href="/modules/create">
+                            <i class="bi bi-circle"></i><span>Ajouter un module</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/modules">
+                            <i class="bi bi-circle"></i><span>Tous les modules</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed"
+                    data-bs-target="#elements-nav"
+                    data-bs-toggle="collapse"
+                    href="#"
+                >
+                    <i class="bi bi-list-ol"></i><span>Élements</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="elements-nav"
+                    class="nav-content collapse"
+                    data-bs-parent="#sidebar-nav"
+                >
+                    <li>
+                        <a href="/matieres/create">
+                            <i class="bi bi-circle"></i><span>Ajouter un élement</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/matieres">
+                            <i class="bi bi-circle"></i><span>Tous les élements</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </th:block>
+
+        <th:block sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'ENSEIGNANT', 'ETUDIANT')">
+            <li class="nav-heading" sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'ENSEIGNANT', 'ETUDIANT')">Gestion d'absences</li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="/absences">
+                    <i class="bi bi-list"></i>
+                    <span>Absences</span>
+                </a>
+            </li>
+        </th:block>
+
+        <th:block sec:authorize="hasAuthority('SUPER_ADMIN')">
+            <li class="nav-heading">Gestion des utilisateurs</li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed"
+                   data-bs-target="#users-nav"
+                   data-bs-toggle="collapse"
+                   href="#"
+                >
+                    <i class="bi bi-person"></i>
+                    <span>Utilisateurs</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="users-nav"
+                    class="nav-content collapse"
+                    data-bs-parent="#sidebar-nav"
+                >
+                    <li>
+                        <a th:href="@{/users/create}">
+                            <i class="bi bi-circle"></i>
+                            <span>Ajouter un utilisateur</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/users}">
+                            <i class="bi bi-circle"></i>
+                            <span>Tous les utilisateurs</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" th:href="@{/etudiants}">
+                    <i class="bi bi-person"></i>
+                    <span>Etudiants</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" th:href="@{/enseignants}">
+                    <i class="bi bi-person"></i>
+                    <span>Enseignants</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" th:href="@{/cadres-admins}">
+                    <i class="bi bi-person"></i>
+                    <span>Cadres administrateurs</span>
+                </a>
+            </li>
+        </th:block>
+
+        <li class="nav-heading" sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'ETUDIANT', 'ENSEIGNANT')">Demandes</li>
+
+        <li class="nav-item" sec:authorize="hasAuthority('ETUDIANT')">
+            <a class="nav-link collapsed"
+               data-bs-target="#demande-autorisation-nav"
+               data-bs-toggle="collapse"
+               href="#"
+            >
+                <i class="bi bi-person"></i>
+                <span>Demande d'autorisation</span>
+                <i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="demande-autorisation-nav"
+                class="nav-content collapse"
+                data-bs-parent="#sidebar-nav"
+            >
+                <li>
+                    <a th:href="@{/demandes-autorisation/create}">
+                        <i class="bi bi-circle"></i>
+                        <span>Faire une demande</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/demandes-autorisation}">
+                        <i class="bi bi-circle"></i>
+                        <span>Tous les demandes</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAuthority('ENSEIGNANT')">
+            <a class="nav-link collapsed" th:href="@{/demandes-autorisation}">
+                <i class="bi bi-list-ul"></i>
+                <span>Demandes d'autorisation d'absence</span>
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'ETUDIANT')">
+            <a class="nav-link collapsed" th:href="@{/reclamations}">
+                <i class="bi bi-list-ul"></i>
+                <span>Réclamations</span>
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasAnyAuthority('ETUDIANT', 'CADRE_ADMINISTRATEUR')">
+            <a class="nav-link collapsed" th:href="@{/inscriptions}">
+                <i class="bi bi-list-ul"></i>
+                <span>Inscriptions</span>
+            </a>
+        </li>
+
+        <li class="nav-heading"><hr/></li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="/profil">
+                <i class="bi bi-person"></i>
+                <span>Profil</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="/logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Se déconnecter</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+
+<main id="main" class="main">
+    <div class="pagetitle" th:fragment="breadcrumb(label1, link1, label)">
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/">Accueil</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="${link1}" th:text="${label1}"></a>
+                </li>
+                <li th:if="${label}" class="breadcrumb-item active" th:text="${label}"></li>
+            </ol>
+        </nav>
+    </div>
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${matiere.name}"></h5>
+
+                        <form method="post" th:action="@{/matieres/{id}(id=${matiere.id})}">
+                            <div class="row mb-3">
+                                <label for="nom-matiere-input" class="col-sm-2 col-form-label">
+                                    Nom <b>*</b>
+                                </label>
+                                <div class="col-sm-10">
+                                    <input
+                                            id="nom-matiere-input"
+                                            type="text"
+                                            name="name"
+                                            class="form-control"
+                                            th:value="${matiere.name}"
+                                            required
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label for="alias-matiere-input" class="col-sm-2 col-form-label">
+                                    Alias <b>*</b>
+                                </label>
+                                <div class="col-sm-10">
+                                    <input
+                                            id="alias-matiere-input"
+                                            type="text"
+                                            class="form-control"
+                                            name="alias"
+                                            th:value="${matiere.alias}"
+                                            required
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save me-2"></i>
+                                        Modifier
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- End General Form Elements -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<!-- End #main -->
+
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+</a>
+
+<!-- Vendor JS Files -->
+<script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+<script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+<script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+<script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+<script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+<script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+<script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+<!-- Template Main JS File -->
+<script th:src="@{/assets/js/main.js}"></script>
+</body>
+</html>

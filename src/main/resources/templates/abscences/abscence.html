@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head th:replace="~{template.html :: head(title='Absence')}"></head>
+
+  <body>
+    <div th:replace="~{template.html :: toasts}"></div>
+
+    <div th:replace="~{template.html :: header}"></div>
+
+    <aside id="sidebar" class="sidebar" th:replace="~{template.html :: sidebar}"></aside>
+
+    <main id="main" class="main">
+      <div class="pagetitle" th:replace="~{template.html :: breadcrumb(label1='Absences', link1='/absences', label='Absence')}"></div>
+
+      <section class="section">
+        <div class="row">
+          <div class="col-lg-1"></div>
+          <div class="col-lg-10">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                  <h5 class="card-title">
+                    Absence
+                    <span class="badge text-bg-warning ms-2"
+                          th:if="${absence.updatedAt != null}"
+                    >
+                      Modifiée
+                    </span>
+                  </h5>
+
+                  <div class="btn-group">
+                    <button type="button"
+                        class="btn btn-secondary dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                        data-bs-display="static"
+                        aria-expanded="false"
+                    >
+                      <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-lg-end">
+                      <li sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'ETUDIANT')">
+                        <button class="dropdown-item"
+                            data-bs-toggle="modal"
+                            data-bs-target="#add-file-modal"
+                        >
+                          <i class="bi bi-file-earmark-plus me-2"></i>
+                          Attacher une pièce justificative
+                        </button>
+                      </li>
+                      <li sec:authorize="hasAuthority('ETUDIANT')">
+                        <button class="dropdown-item"
+                            data-bs-toggle="modal"
+                            data-bs-target="#send-complaint"
+                        >
+                          <i class="bi bi-file-earmark-plus me-2"></i>
+                          Faire une réclamation
+                        </button>
+                      </li>
+                      <li sec:authorize="hasAuthority('ENSEIGNANT')">
+                        <form th:action="@{/absences/{id}/cancel(id=${absence.id})}" method="post">
+                          <button type="submit" class="dropdown-item">
+                            <i class="bi bi-x me-2"></i>
+                            Annuler l'absence
+                          </button>
+                        </form>
+                      </li>
+                      <li sec:authorize="hasAuthority('CADRE_ADMINISTRATEUR')">
+                        <button type="button" class="dropdown-item"
+                            data-bs-target="#update-absence-state"
+                            data-bs-toggle="modal"
+                        >
+                          <i class="bi bi-pen me-2"></i>
+                          Modifier l'état
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Tabs -->
+                <ul
+                  class="nav nav-tabs nav-tabs-bordered"
+                  id="borderedTab"
+                  role="tablist"
+                >
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link active"
+                      id="list-absences-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#bordered-list-absences"
+                      type="button"
+                      role="tab"
+                      aria-controls="list-absences"
+                      aria-selected="true"
+                    >
+                      Informations
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      id="pieces-justif-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#bordered-pieces-justif"
+                      type="button"
+                      role="tab"
+                      aria-controls="pieces-justif"
+                      aria-selected="false"
+                    >
+                      Pièce justificatives
+                    </button>
+                  </li>
+                </ul>
+                <div class="tab-content pt-2" id="borderedTabContent">
+                  <!-- ======= Abscence infos Tab======= -->
+                  <div
+                    class="tab-pane fade show active py-3"
+                    id="bordered-list-absences"
+                    role="tabpanel"
+                    aria-labelledby="list-absences"
+                  >
+                    <div class="row mb-3">
+                      <p class="col-sm-3"><b>Type de séance</b></p>
+                      <div class="col-sm-9">
+                        <a sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'SUPER_ADMIN')"
+                           th:href="@{/types-seances/{id}(id=${absence.typeSeance.id})}"
+                        >
+                          <span th:text="${absence.typeSeance.name}"></span>
+                          <i class="bi bi-link-45deg ms-2"></i>
+                        </a>
+                        <p sec:authorize="hasAnyAuthority('ENSEIGNANT', 'ETUDIANT')"
+                           th:text="${absence.typeSeance.name}"
+                        ></p>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <p class="col-sm-3"><b>Élement</b></p>
+                      <div class="col-sm-9">
+                        <a sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'SUPER_ADMIN')"
+                           th:href="@{/matieres/{id}(id=${absence.matiere.id})}"
+                        >
+                          <span th:text="${absence.matiere.name}"></span>
+                          <i class="bi bi-link-45deg ms-2"></i>
+                        </a>
+                        <p sec:authorize="hasAnyAuthority('ENSEIGNANT', 'ETUDIANT')"
+                           th:text="${absence.matiere.name}"
+                        ></p>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3"
+                         sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'ENSEIGNANT', 'SUPER_ADMIN')"
+                    >
+                      <p class="col-sm-3"><b>Étudiant</b></p>
+                      <div class="col-sm-9">
+                        <a sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'SUPER_ADMIN')"
+                           th:href="@{/etudiants/{id}(id=${absence.etudiant.id})}"
+                        >
+                          <span th:text="${absence.etudiant.lastnameFr.toUpperCase() + ' ' + absence.etudiant.firstnameFr}"></span>
+                          <i class="bi bi-link-45deg ms-2"></i>
+                        </a>
+                        <p sec:authorize="hasAuthority('ENSEIGNANT')"
+                           th:text="${absence.etudiant.lastnameFr.toUpperCase() + ' ' + absence.etudiant.firstnameFr}"
+                        ></p>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3"
+                         sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'ETUDIANT', 'SUPER_ADMIN')"
+                    >
+                      <p class="col-sm-3"><b>Enseignant</b></p>
+                      <div class="col-sm-9">
+                        <a sec:authorize="hasAnyAuthority('CADRE_ADMINISTRATEUR', 'SUPER_ADMIN')"
+                           th:href="@{/enseignants/{id}(id=${absence.enseignant.id})}"
+                        >
+                          <span th:text="${absence.enseignant.lastnameFr.toUpperCase() + ' ' + absence.enseignant.firstnameFr}"></span>
+                          <i class="bi bi-link-45deg ms-2"></i>
+                        </a>
+                        <p sec:authorize="hasAuthority('ETUDIANT')"
+                           th:text="${absence.enseignant.lastnameFr.toUpperCase() + ' ' + absence.enseignant.firstnameFr}"
+                        ></p>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <p class="col-sm-3"><b>Moment d'absence</b></p>
+                      <div class="col-sm-9">
+                        <p>
+                          Le <span class="badge text-bg-info" th:text="${#dates.format(absence.moment, 'dd-MM-yyyy')}"></span>
+                          à <span class="badge text-bg-info" th:text="${#dates.format(absence.moment, 'HH:mm')}"></span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <p class="col-sm-3"><b>État</b></p>
+                      <div class="col-sm-9">
+                        <p th:text="${absence.etat.name}"></p>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- End Abscence infos Tab -->
+
+                  <!-- ======= Liste des Pieces justificatives Tab ======= -->
+                  <div
+                    class="tab-pane fade show py-3"
+                    id="bordered-pieces-justif"
+                    role="tabpanel"
+                    aria-labelledby="pieces-justif"
+                  >
+                    <table class="table text-center">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Fichier</th>
+                          <th scope="col">Intitulé</th>
+                          <th scope="col">État</th>
+                          <th scope="col">Date de soumission</th>
+                          <th scope="col">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="piece : ${absence.pieces}">
+                          <th th:text="${piece.id}" scope="row">1</th>
+                          <td>
+                            <a th:href="@{/files/{id}/download(id=${piece.source.id})}" target="_blank" class="btn btn-link">
+                              <i class="bi bi-link-45deg"></i> Ouvrir le fichier
+                            </a>
+                          </td>
+                          <td th:text="${piece.text}"></td>
+                          <td th:text="${piece.state.name}"></td>
+                          <td th:text="${#dates.format(piece.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
+                          <td>
+                            <div class="d-flex justify-content-center align-items-center">
+                              <a th:href="@{/pieces-justificatives/{id}(id=${piece.id})}" class="btn btn-outline-primary mx-1">
+                                <i class="bi bi-eye"></i>
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <!-- Liste des Pieces justificatives Tab -->
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div sec:authorize="hasAnyAuthority('ETUDIANT', 'CADRE_ADMINISTRATEUR')"
+         class="modal fade"
+         tabindex="-1"
+         id="add-file-modal"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ajouter une pièce justificative</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" th:action="@{/pieces-justificatives}" enctype="multipart/form-data">
+              <input th:value="${absence.id}" name="absenceId" hidden />
+              <div class="row mt-3">
+                <label class="col-sm-2 col-form-label" for="intitule">Intitulé</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" name="intitule" id="intitule" />
+                </div>
+              </div>
+              <div class="row mt-3">
+                <label class="col-sm-2 col-form-label text-wrap" for="intitule">Pièces Justificatives</label>
+                <div class="col-sm-10">
+                  <input class="form-control" type="file" name="files" multiple accept="application/pdf, image/*">
+                </div>
+              </div>
+              <div class="my-3 d-flex align-items-center justify-content-end">
+                <button type="reset" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-plus me-2"></i>
+                  Ajouter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div sec:authorize="hasAuthority('ETUDIANT')"
+         class="modal fade"
+         tabindex="-1"
+         id="send-complaint"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Faire une réclamation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" th:action="@{/reclamations}" th:object="${sendComplaint}">
+              <input th:value="${absence.id}" name="absenceId" hidden />
+              <div class="row mt-3">
+                <label class="col-sm-2 col-form-label text-wrap" for="intitule">Contenu</label>
+                <div class="col-sm-10">
+                  <textarea th:field="*{content}" class="form-control"></textarea>
+                </div>
+              </div>
+              <div class="my-3 d-flex align-items-center justify-content-end">
+                <button type="reset" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-plus me-2"></i>
+                  Ajouter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div sec:authorize="hasAuthority('CADRE_ADMINISTRATEUR')" class="modal fade" tabindex="-1" id="update-absence-state">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modifier l'état d'absence</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" th:action="@{/absences/{id}/state(id=${absence.id})}">
+              <input th:value="${absence.id}" name="absenceId" hidden />
+              <div class="row mt-3">
+                <label class="col-sm-2 col-form-label text-wrap" for="intitule">État</label>
+                <div class="col-sm-10">
+                  <select name="state"
+                          class="form-select"
+                          aria-label="Default select example"
+                  >
+                    <option disabled selected>Choisir l'état</option>
+                    <option th:each="state : ${states}"
+                            th:text="${state.getName()}"
+                            th:value="${state.name()}"
+                            th:selected="${state.equals(absence.etat)} ? 'selected'"
+                    ></option>
+                  </select>
+                </div>
+              </div>
+              <div class="my-3 d-flex align-items-center justify-content-end">
+                <button type="reset" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-plus me-2"></i>
+                  Ajouter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS Files -->
+    <script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+    <script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+    <script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+    <script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+    <script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+    <script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+    <script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+    <!-- Template Main JS File -->
+    <script th:src="@{/assets/js/main.js}"></script>
+  </body>
+</html>

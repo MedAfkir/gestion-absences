@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head th:replace="~{template.html :: head(title='Demandes d\'autorisation d\'absences')}"></head>
+
+<body>
+<div th:replace="~{template.html :: toasts}"></div>
+
+<div th:replace="~{template.html :: header}"></div>
+
+<aside id="sidebar" class="sidebar" th:replace="~{template.html :: sidebar}"></aside>
+
+<main id="main" class="main">
+  <div class="pagetitle" th:replace="~{template.html :: breadcrumb(label1='Demandes d\'autorisation', link1='/demandes-autorisation', label=false)}"></div>
+
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="card-title">Tous les demandes</h5>
+              <a sec:authorize="hasAuthority('ETUDIANT')" class="btn btn-link" th:href="@{/demandes-autorisation/create}">
+                <i class="bi bi-plus me-1"></i>
+                Ajouter
+              </a>
+            </div>
+
+            <div class="table-responsive text-nowrap">
+              <table class="table text-center">
+                <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th>Contenu</th>
+                  <th sec:authorize="hasAuthority('ETUDIANT')">Enseignant</th>
+                  <th sec:authorize="hasAuthority('ENSEIGNANT')">Etudiant</th>
+                  <th>Date de creation</th>
+                </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="demand : ${demands.content}">
+                    <th th:text="${demand.id}" scope="row"></th>
+                    <td th:text="${demand.content}"></td>
+                    <td sec:authorize="hasAuthority('ETUDIANT')">
+                      <img width="50px" th:if="${demand.enseignant.image == null}" th:src="@{/assets/img/profil.png}" alt="Photo de profil" class="rounded-circle" />
+                      <img width="50px" th:if="${demand.enseignant.image != null}"
+                           th:src="'data:' + ${demand.enseignant.image.type} + ';base64,' + ${demand.enseignant.image.data}"
+                           alt="Photo de profil" class="rounded-circle"
+                      />
+                      <p th:text="${demand.enseignant.firstnameFr + ' ' + demand.enseignant.lastnameFr.toUpperCase()}" class="mb-0"></p>
+                    </td>
+                    <td sec:authorize="hasAuthority('ENSEIGNANT')">
+                      <img width="50px" th:if="${demand.etudiant.image == null}" th:src="@{/assets/img/profil.png}" alt="Photo de profil" class="rounded-circle" />
+                      <img width="50px" th:if="${demand.etudiant.image != null}"
+                           th:src="'data:' + ${demand.etudiant.image.type} + ';base64,' + ${demand.etudiant.image.data}"
+                           alt="Photo de profil" class="rounded-circle"
+                      />
+                      <p th:text="${demand.etudiant.firstnameFr + ' ' + demand.etudiant.lastnameFr.toUpperCase()}" class="mb-0"></p>
+                    </td>
+                    <td th:text="${'Le ' + #dates.format(demand.createdAt, 'dd-MM-YYYY') + ' à ' + #dates.format(demand.createdAt, 'HH:mm')}"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-center" th:if="${demands.hasContent()}">
+              <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                  <li class="page-item" th:if="${demands.hasPrevious()}">
+                    <a class="page-link"
+                       th:href="@{/demandes-autorisation(page=${demands.number})}"
+                    >
+                      Précedant
+                    </a>
+                  </li>
+                  <li class="page-item disabled" th:if="${!demands.hasPrevious()}">
+                    <a class="page-link" href="#">Précedant</a>
+                  </li>
+                  <li class="page-item" th:each="n : ${#numbers.sequence(1, demands.totalPages)}">
+                    <a class="page-link"
+                       th:classappend="${demands.number + 1 == n} ? 'active'"
+                       th:href="@{/demandes-autorisation(page=${n})}"
+                       th:text="${n}"
+                    ></a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link"
+                       th:if="${demands.hasNext()}"
+                       th:href="@{/demandes-autorisation(page=${demands.number + 2})}"
+                    >
+                      Suivant
+                    </a>
+                  </li>
+                  <li class="page-item disabled" th:if="${!demands.hasNext()}">
+                    <a class="page-link" href="#">Suivant</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- End #main -->
+
+<a
+        href="#"
+        class="back-to-top d-flex align-items-center justify-content-center"
+><i class="bi bi-arrow-up-short"></i
+></a>
+
+<!-- Vendor JS Files -->
+<script th:src="@{/assets/vendor/apexcharts/apexcharts.min.js}"></script>
+<script th:src="@{/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/assets/vendor/chart.js/chart.umd.js}"></script>
+<script th:src="@{/assets/vendor/echarts/echarts.min.js}"></script>
+<script th:src="@{/assets/vendor/quill/quill.min.js}"></script>
+<script th:src="@{/assets/vendor/simple-datatables/simple-datatables.js}"></script>
+<script th:src="@{/assets/vendor/tinymce/tinymce.min.js}"></script>
+<script th:src="@{/assets/vendor/php-email-form/validate.js}"></script>
+
+<!-- Template Main JS File -->
+<script th:src="@{/assets/js/main.js}"></script>
+</body>
+</html>
