@@ -59,7 +59,7 @@ public class EnseignantController {
         model.addAttribute("updateRequest", enseignantMapper.map(enseignantDTO));
         SessionUser user = SessionManager.getUserSession(session);
 
-        model.addAttribute("absences", absenceService.getAbsencesByEnseignant(enseignantId, absencePage - 1""));
+        model.addAttribute("absences", absenceService.getAbsencesByEnseignant(enseignantId, absencePage - 1));
 
         if (user.getRole().equals(User.Role.SUPER_ADMIN)) {
             model.addAttribute("historical", loggingEventService.getVisitsByUserId(enseignantId, historicalPage - 1));
