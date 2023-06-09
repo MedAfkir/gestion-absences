@@ -33,6 +33,7 @@
                   <th>Contenu</th>
                   <th sec:authorize="hasAuthority('ETUDIANT')">Enseignant</th>
                   <th sec:authorize="hasAuthority('ENSEIGNANT')">Etudiant</th>
+                  <th>État</th>
                   <th>Date de creation</th>
                 </tr>
                 </thead>
@@ -56,6 +57,7 @@
                       />
                       <p th:text="${demand.etudiant.firstnameFr + ' ' + demand.etudiant.lastnameFr.toUpperCase()}" class="mb-0"></p>
                     </td>
+                    <td th:text="${demand.state.name}"></td>
                     <td th:text="${'Le ' + #dates.format(demand.createdAt, 'dd-MM-YYYY') + ' à ' + #dates.format(demand.createdAt, 'HH:mm')}"></td>
                   </tr>
                 </tbody>
