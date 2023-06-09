@@ -104,19 +104,14 @@ public class AbsenceController {
             @RequestParam("matiereId") Long matiereId,
             @RequestParam("typeSeanceId") Long typeSeanceId,
             @RequestParam("etudiants") List<Long> etudiants,
-            @RequestParam("moment") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") Date moment,
-            BindingResult bindingResult
+            @RequestParam("moment") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") Date moment
     ) {
-        if (bindingResult.hasErrors()) {
-            attributes.addAttribute("error", bindingResult.getAllErrors().get(0).getDefaultMessage());
-        } else {
-            try {
-                SessionUser user = SessionManager.getUserSession(session);
-                absenceService.createAbsence(matiereId, typeSeanceId, etudiants, user.getId(), moment);
-                attributes.addAttribute("success", "Absences crées avec succés");
-            } catch (NotFoundException | UnsupportedActionException exception) {
-                attributes.addAttribute("error", exception.getMessage());
-            }
+        try {
+            SessionUser user = SessionManager.getUserSession(session);
+            absenceService.createAbsence(matiereId, typeSeanceId, etudiants, user.getId(), moment);
+            attributes.addAttribute("success", "Absences crées avec succés");
+        } catch (NotFoundException | UnsupportedActionException exception) {
+            attributes.addAttribute("error", exception.getMessage());
         }
 
         return new RedirectView("/absences/create");
